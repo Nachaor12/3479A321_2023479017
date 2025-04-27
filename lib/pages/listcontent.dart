@@ -30,7 +30,7 @@ class MyListPage extends StatelessWidget{
         title: Text('Lab-5-Alfaro-List-Content')
       ),
       persistentFooterButtons: <Widget>[
-        TextButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=> const MyHomePage(title: 'Lab-5-Alfaro')));},
+        TextButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=> const MyHomePage(title: 'Lab-5-Alfaro Home Page')));},
         child: Icon(Icons.keyboard_arrow_left_rounded, size: 40)),
         TextButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=> const MyAboutPage()));}, 
         child: Icon(Icons.keyboard_arrow_right_rounded, size: 40))
