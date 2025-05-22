@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:application_laboratorio/pages/listcontent.dart';
+import 'package:application_laboratorio/pages/newpage.dart';
+import 'package:provider/provider.dart';
 
 var logger = Logger();
 
@@ -9,6 +11,14 @@ class MyAboutPage extends StatelessWidget{
   /*void _goBackPage(BuildContext context){
     Navigator.pop(context, MaterialPageRoute(builder: (context)=> const MyListPage()));
   }*/
+
+  void changeRestart(BuildContext context){
+    context.read<AppData>().restartDisponible = true;
+  }
+
+  void changeName(BuildContext context, String text){
+    context.read<AppData>().userName = text;
+  }
 
   @override
   Widget build(BuildContext context){
@@ -25,7 +35,17 @@ class MyAboutPage extends StatelessWidget{
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Es que me pase con la Kem Xtreme anoche y no dormi')
+            Text('Es que me pase con la Kem Xtreme anoche y no dormi'),
+            IconButton(onPressed: () => changeRestart(context), icon: Icon(Icons.abc, size: 30,)),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Ingresa tu nombre', 
+                border: OutlineInputBorder()
+              ),
+              onChanged: (value) {
+                changeName(context, value);
+              },
+            )
           ],
         ),
       )
