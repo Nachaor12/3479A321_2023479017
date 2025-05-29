@@ -83,14 +83,14 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> updateDog(Activity activity) async {
+  Future<void> updateActivity(Activity activity) async {
     final db = await database;
 
     await db.update(
       'activities',
       activity.toMap(),
       where: 'id = ?',
-      whereArgs: [activity.id],
+      whereArgs: [activity.id],                                                                
     );
   }
 

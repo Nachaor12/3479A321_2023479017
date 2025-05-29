@@ -183,7 +183,7 @@ class _MyVisualPageState extends State<MyVisualPage> {
         _activities[index].date  = value;
         break;
     }
-    await _dbHelper.updateDog(_activities[index]);
+    await _dbHelper.updateActivity(_activities[index]);
     setState(() {});
   }
 
