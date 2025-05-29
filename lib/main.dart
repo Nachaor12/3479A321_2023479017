@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 //import 'package:google_fonts/google_fonts.dart';
 //import 'package:logger/logger.dart';
 import 'package:application_laboratorio/pages/newpage.dart';
+import 'package:application_laboratorio/services/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper().initializeDatabase();
+
   runApp(const MyApp());
 }

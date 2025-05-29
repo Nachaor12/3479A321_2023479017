@@ -3,8 +3,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:application_laboratorio/pages/listcontent.dart';
+import 'package:application_laboratorio/pages/about.dart';
 import 'package:provider/provider.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:application_laboratorio/pages/visualactivity.dart';
+import 'package:application_laboratorio/pages/preferences.dart';
 
 
 class AppData extends ChangeNotifier {
@@ -39,10 +42,6 @@ class AppData extends ChangeNotifier {
   }
 }
 
-
-
-
-
 const String iconname = "assets/icons/Icon1.svg";
 final Widget svg = SvgPicture.asset(
   iconname,
@@ -70,6 +69,7 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.blackOpsOneTextTheme()
         ),
         home: const Parent(),
+        
       )
     );
   }
@@ -82,28 +82,72 @@ class MyHomePage extends StatefulWidget {
   final VoidCallback changeName;
 
   @override
-  State<MyHomePage> createState(){
-    print("createState");
-    return _MyHomePageState();
-  }
+  State<MyHomePage> createState() => _MyHomePageState();
+  //State<MyHomePage> createState(){ print("createState"); return _MyHomePageState();}
 }
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  bool isResetEnabled = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPreferences();
+    });
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isResetEnabled = prefs.getBool('isResetEnabled') ?? false;
+    });
+  }
+
+
+
+  void changeNameHomePage(String text){
+    setState(() {
+      text = "Mi lab 7";
+    });
+  }
   void _nextPage(){
     setState(() {
       //logger.d('Se cambio de pantalla');
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> const MyListPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context)=> MyHomePage(title: "Lab 7", changeName: () => changeNameHomePage("Lab7"),)));
+    });
+  }
+  void _nextPage1(){
+    setState(() {
+      //logger.d('Se cambio de pantalla');
+      //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> const MyListPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context)=> const MyListPage()));
     });
   }
   void _nextPage2(){
     setState(() {
       //logger.d('Se cambio de pantalla');
-      Navigator.push(context, MaterialPageRoute(builder: (context)=> const MyListPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context)=> const MyAboutPage()));
+    });
+  }
+  void _nextPage3(){
+    setState(() {
+      //logger.d('Se cambio de pantalla');
+      Navigator.push(context, MaterialPageRoute(builder: (context)=> const MyVisualPage()));
+    });
+  }
+  void _nextPage4(){
+    Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => MyPreferencesPage()
+    )
+    ).then((_) {
+    _loadPreferences();
     });
   }
 
-
+  /*
   @override
   void initState() {
     print("initState: $mounted");
@@ -118,27 +162,46 @@ class _MyHomePageState extends State<MyHomePage> {
   void setState(VoidCallback fn) {
     print("setState: $mounted");
     super.setState(fn);
-  }
+  }*/
+
 
   @override
   Widget build(BuildContext context) {
 
-    print("build called");
+    //print("build called");
     return Scaffold(
       appBar: AppBar(
-
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
         title: Text(widget.title),
+        
       ),
 
-      body: NewCardWidget(counter: context.read<AppData>().counter, newMethod: newMethod, context: context),
+      body: DefaultTabController(
+        length: 5,
+        child: Scaffold(
+          appBar: AppBar(
+            bottom: TabBar(
+              tabs: [
+                Tab(child: TextButton(onPressed: _nextPage, child: Icon(Icons.home, color: Colors.cyanAccent,))),
+                Tab(child: TextButton(onPressed: _nextPage1, child: Icon(Icons.inbox, color: Colors.cyanAccent))),
+                Tab(child: TextButton(onPressed: _nextPage2, child: Icon(Icons.info, color: Colors.cyanAccent))),
+                Tab(child: TextButton(onPressed: _nextPage3, child: Icon(Icons.add_chart, color: Colors.cyanAccent))),
+                Tab(child: TextButton(onPressed: _nextPage4, child: Icon(Icons.room_preferences, color: Colors.cyanAccent,),))
+              ],
+            ),
+            title: const Text('Pages', textScaler: TextScaler.linear(1),),
+            backgroundColor: const Color.fromARGB(255, 188, 57, 101),
+          ),
+          body: NewCardWidget(counter: context.read<AppData>().counter, newMethod: newMethod, context: context),
+        )
+      ),
       persistentFooterButtons: <Widget> [
-        TextButton(onPressed: _nextPage2, child: Icon(Icons.keyboard_arrow_right_rounded, size: 40))
+        TextButton(onPressed: _nextPage, child: Icon(Icons.keyboard_arrow_right_rounded, size: 40))
       ]
+      
     );
   }
-
+  /*
   @override
   void didUpdateWidget(covariant MyHomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -162,7 +225,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.reassemble();
     print("reassemble: $mounted");
   }
-
+  */
 
   List<Widget> get newMethod {
     return <Widget>[
@@ -191,9 +254,11 @@ class NewCardWidget extends StatelessWidget {
     return Center(
       child: Card(
         elevation: 8,
+        margin: EdgeInsets.all(10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         color: Color.fromARGB(255, 151, 196, 247),
-        child: Padding(padding: const EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -202,12 +267,13 @@ class NewCardWidget extends StatelessWidget {
               SizedBox(height: 50),
               Text('User name: ${context.watch<AppData>().userName}'),
               SizedBox(height: 50,),
+              const Text('Tu has pusheado este', textScaler: TextScaler.linear(1.2)),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text('Tu has pusheado este boton estas veces :', textScaler: TextScaler.linear(1.2)),
+                  const Text('boton estas veces :', textScaler: TextScaler.linear(1.2)),
                   SizedBox(width: 12),
                   Text(
                     '${context.watch<AppData>().counter}',
@@ -253,3 +319,4 @@ class _ParentState extends State<Parent> {
     return MyHomePage(title: _title, changeName: pressName,);
   }
 }
+

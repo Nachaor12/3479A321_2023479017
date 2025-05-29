@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:application_laboratorio/pages/listcontent.dart';
 import 'package:application_laboratorio/pages/newpage.dart';
+import 'package:application_laboratorio/pages/preferences.dart';
 import 'package:provider/provider.dart';
 
 var logger = Logger();
@@ -12,8 +13,8 @@ class MyAboutPage extends StatelessWidget{
     Navigator.pop(context, MaterialPageRoute(builder: (context)=> const MyListPage()));
   }*/
 
-  void changeRestart(BuildContext context){
-    context.read<AppData>().restartDisponible = true;
+  void goToPreferences(BuildContext context){
+    Navigator.push(context, MaterialPageRoute(builder: (context) => const MyPreferencesPage()));
   }
 
   void changeName(BuildContext context, String text){
@@ -36,7 +37,8 @@ class MyAboutPage extends StatelessWidget{
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Es que me pase con la Kem Xtreme anoche y no dormi'),
-            IconButton(onPressed: () => changeRestart(context), icon: Icon(Icons.abc, size: 30,)),
+            Text("Presionar para ir a preferences"),
+            IconButton(onPressed: () => goToPreferences(context), icon: Icon(Icons.room_preferences, size: 30,)),
             TextField(
               decoration: InputDecoration(
                 labelText: 'Ingresa tu nombre', 

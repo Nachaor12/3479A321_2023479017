@@ -1,5 +1,5 @@
 import 'package:application_laboratorio/pages/about.dart';
-import 'package:application_laboratorio/pages/newpage.dart';
+//import 'package:application_laboratorio/pages/newpage.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -41,10 +41,13 @@ class MyListPage extends StatelessWidget{
           return ListTile(
             title: Center(
               heightFactor: 5,
-              child: Text(newTextList[index]),
+              child: Text(
+                newTextList[index]
+              ),
             )
           );
-        })
+        }
+      )
     );
   }
 }
