@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:application_laboratorio/pages/visualactivity.dart';
 import 'package:application_laboratorio/pages/preferences.dart';
+import 'package:http/http.dart' as http;
 
 
 class AppData extends ChangeNotifier {
@@ -165,6 +166,39 @@ class _MyHomePageState extends State<MyHomePage> {
   }*/
 
 
+  String urlImage = 'https://picsum.photos/250?image=58';
+
+  void _getNewImage() async{
+    int counter = context.read<AppData>().counter;
+    if(counter < 0){
+      counter = -counter;
+    }
+
+    try {
+    final response = await http.head(Uri.parse(urlImage));
+      if (response.statusCode == 200) {
+        setState(() {
+        final _imageUrl = urlImage;
+        });
+      } 
+      else {
+        setState(() {
+        final _imageUrl = ''; // Clear the image URL
+        });
+      }
+    } 
+    catch (e) {
+      setState(() {
+        final _imageUrl = ''; // Clear the image URL
+      });
+    }
+
+    setState(() {
+      urlImage = 'https://picsum.photos/250?image=${1 + counter}';
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
 
@@ -192,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
             title: const Text('Pages', textScaler: TextScaler.linear(1),),
             backgroundColor: const Color.fromARGB(255, 188, 57, 101),
           ),
-          body: NewCardWidget(counter: context.read<AppData>().counter, newMethod: newMethod, context: context),
+          body: NewCardWidget(urlImage: urlImage,counter: context.read<AppData>().counter, newMethod: newMethod, context: context),
         )
       ),
       persistentFooterButtons: <Widget> [
@@ -229,11 +263,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Widget> get newMethod {
     return <Widget>[
+      TextButton(onPressed: _getNewImage, child: Icon(Icons.image)),
       TextButton(onPressed: context.read<AppData>().incrementCounter, child: Icon(Icons.add)),
       TextButton(onPressed: context.read<AppData>().decreaseCounter, child: Icon(Icons.remove)),
       TextButton(onPressed: context.read<AppData>().resetCounter, child: Icon(Icons.restart_alt_rounded)),
       TextButton(onPressed: _nextPage, child: Icon(Icons.keyboard_arrow_right_rounded, size: 30)),
-      TextButton(onPressed: widget.changeName, child: Icon(Icons.ac_unit_sharp, size: 30))
+      //TextButton(onPressed: widget.changeName, child: Icon(Icons.ac_unit_sharp, size: 30))
     ];
   }
 }
@@ -241,11 +276,13 @@ class _MyHomePageState extends State<MyHomePage> {
 class NewCardWidget extends StatelessWidget {
   const NewCardWidget({
     super.key,
+    required this.urlImage,
     required int counter,
     required this.newMethod,
     required this.context,
   });
   
+  final String urlImage;
   final List<Widget> newMethod;
   final BuildContext context;
 
@@ -262,11 +299,26 @@ class NewCardWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(height: 50),
-              const Text('      "Flutter es un framework,\nno un lenguaje de programación"', textScaler: TextScaler.linear(1.5)),
-              SizedBox(height: 50),
+              SizedBox(height: 5),
+              Image.network(
+                urlImage.isNotEmpty ? urlImage : '',
+                width: 250,
+                height: 250,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(
+                    child: Text(
+                    'Failed to load image',
+                    style: TextStyle(color: Colors.red),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 10),
+              const Text('"Flutter es un framework,\n\tno un lenguaje de \n\tprogramación"', textScaler: TextScaler.linear(1.5)),
+              SizedBox(height: 15),
               Text('User name: ${context.watch<AppData>().userName}'),
-              SizedBox(height: 50,),
+              SizedBox(height: 15,),
               const Text('Tu has pusheado este', textScaler: TextScaler.linear(1.2)),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -281,8 +333,9 @@ class NewCardWidget extends StatelessWidget {
                   ),
                 ],
               ),
+              SizedBox(height: 10),
               svg,
-              SizedBox(height: 50),
+              SizedBox(height: 15),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -306,11 +359,11 @@ class Parent extends StatefulWidget {
 }
 
 class _ParentState extends State<Parent> {
-  String _title = 'Lab-5-Alfaro Home Page';
+  String _title = 'Lab-8-Alfaro Home Page';
   
   void pressName(){
     setState(() {
-      _title = "Ahora es el Lab 6";
+      _title = "Ahora es el Lab 8";
     });
   }
 
