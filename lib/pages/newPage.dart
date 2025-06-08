@@ -302,8 +302,8 @@ class NewCardWidget extends StatelessWidget {
               SizedBox(height: 5),
               Image.network(
                 urlImage.isNotEmpty ? urlImage : '',
-                width: 250,
-                height: 250,
+                width: 100,
+                height: 100,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Center(
