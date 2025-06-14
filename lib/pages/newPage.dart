@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:application_laboratorio/pages/visualactivity.dart';
 import 'package:application_laboratorio/pages/preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:application_laboratorio/pages/picturescreen.dart';
+import 'package:application_laboratorio/pages/photoalbum.dart';
 
 
 class AppData extends ChangeNotifier {
@@ -54,6 +59,8 @@ final Widget svg = SvgPicture.asset(
 var logger = Logger();
 
 
+
+
 class MyApp extends StatelessWidget {
   
   const MyApp({super.key});
@@ -81,6 +88,7 @@ class MyHomePage extends StatefulWidget {
 
   final String title;
   final VoidCallback changeName;
+  
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -90,12 +98,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   bool isResetEnabled = false;
+  List<CameraDescription> cameras = [];
+  late CameraDescription firstCamera;
+  String _imagePath = '';
+  bool imagePhoto = false;
+  List<Image> listPhoto = [];
   
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPreferences();
+      _loadCameras();
     });
   }
 
@@ -106,13 +120,33 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> _loadCameras() async {
+    cameras = await availableCameras();
+    setState(() {
+      firstCamera = cameras.first;
+    });
+  }
 
+  void _nextCamera() async {
+    final imagePath = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => TakePictureScreen(camera:
+      firstCamera)),
+    );
+    if (imagePath != null) {
+      setState(() {
+        _imagePath = imagePath;
+        listPhoto.add(Image.file(File(_imagePath)));
+        imagePhoto = true;
+      });
+    }
+  }
 
   void changeNameHomePage(String text){
     setState(() {
       text = "Mi lab 7";
     });
   }
+
   void _nextPage(){
     setState(() {
       //logger.d('Se cambio de pantalla');
@@ -148,6 +182,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _goPhotoAlbum(){
+    setState(() {
+      //logger.d('Se cambio de pantalla');
+      Navigator.push(context, MaterialPageRoute(builder: (context)=> PhotoAlbumPage(listPhotos: listPhoto,)));
+    });
+  }
+  
+
   /*
   @override
   void initState() {
@@ -166,10 +208,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }*/
 
 
-  String urlImage = 'https://picsum.photos/250?image=58';
+  String urlImage = 'https://picsum.photos/250?image=31';
 
   void _getNewImage() async{
     int counter = context.read<AppData>().counter;
+
     if(counter < 0){
       counter = -counter;
     }
@@ -194,7 +237,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     setState(() {
-      urlImage = 'https://picsum.photos/250?image=${1 + counter}';
+      imagePhoto = false;
+      urlImage = 'https://picsum.photos/250?image=${0 + counter}';
     });
   }
 
@@ -226,11 +270,13 @@ class _MyHomePageState extends State<MyHomePage> {
             title: const Text('Pages', textScaler: TextScaler.linear(1),),
             backgroundColor: const Color.fromARGB(255, 188, 57, 101),
           ),
-          body: NewCardWidget(urlImage: urlImage,counter: context.read<AppData>().counter, newMethod: newMethod, context: context),
+          body: NewCardWidget(urlImage: urlImage,counter: context.read<AppData>().counter, newMethod: newMethod, context: context, imagePath: _imagePath,imagePhoto: imagePhoto,),
         )
       ),
       persistentFooterButtons: <Widget> [
-        TextButton(onPressed: _nextPage, child: Icon(Icons.keyboard_arrow_right_rounded, size: 40))
+        TextButton(onPressed: _nextPage, child: Icon(Icons.keyboard_arrow_right_rounded, size: 40)),
+        TextButton(onPressed: _nextCamera, child: Icon(Icons.camera_alt, size: 40,)),
+        TextButton(onPressed: _goPhotoAlbum, child: Icon(Icons.album)),
       ]
       
     );
@@ -280,11 +326,45 @@ class NewCardWidget extends StatelessWidget {
     required int counter,
     required this.newMethod,
     required this.context,
+    required this.imagePath,
+    required this.imagePhoto,
   });
   
   final String urlImage;
   final List<Widget> newMethod;
   final BuildContext context;
+  final String imagePath;
+  final bool imagePhoto;
+
+  Image imageScreen(){
+    if (imagePath.isNotEmpty && imagePhoto) {
+      return Image.file(
+        File(imagePath),
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Text('Error cargando imagen local');
+        },
+      );
+    } else {
+      return Image.network(
+        urlImage.isNotEmpty ? urlImage : '',
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Center(
+            child: Text(
+            'Failed to load image',
+            style: TextStyle(color: Colors.red),
+            ),
+          );
+        },
+      ); 
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -300,20 +380,7 @@ class NewCardWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(height: 5),
-              Image.network(
-                urlImage.isNotEmpty ? urlImage : '',
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(
-                    child: Text(
-                    'Failed to load image',
-                    style: TextStyle(color: Colors.red),
-                    ),
-                  );
-                },
-              ),
+              imageScreen(),
               SizedBox(height: 10),
               const Text('"Flutter es un framework,\n\tno un lenguaje de \n\tprogramación"', textScaler: TextScaler.linear(1.5)),
               SizedBox(height: 15),
@@ -359,11 +426,11 @@ class Parent extends StatefulWidget {
 }
 
 class _ParentState extends State<Parent> {
-  String _title = 'Lab-8-Alfaro Home Page';
+  String _title = 'Lab-9-Alfaro Home Page';
   
   void pressName(){
     setState(() {
-      _title = "Ahora es el Lab 8";
+      _title = "Ahora es el Lab 9";
     });
   }
 
